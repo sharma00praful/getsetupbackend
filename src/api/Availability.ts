@@ -36,6 +36,7 @@ export class Availability {
         //saving all dates for a user and getting unique id for slot processing
         const dateId = this.addDate(itemDate);
       });
+      this.response.status(200).send(JSON.stringify(this.validated));
     } else {
       this.response.status(200).send(JSON.stringify(this.validated));
     }
@@ -53,6 +54,7 @@ export class Availability {
         datesTable.week = that.weekNumber;
         datesTable.date = date;
         await connection.manager.save(datesTable);
+
         itemDate.dateId = datesTable.dateId;
       } catch (error) {
         console.log(error);
@@ -88,7 +90,7 @@ export class Availability {
     //submission to occur in certain hours 7AM to 10PM
     const date = new Date();
     const currentHour = date.getHours();
-    if (currentHour >= 2 && currentHour <= 3)
+    if (currentHour >= 0 && currentHour <= 1)
       //(currentHour < 7 || currentHour > 22)
       this.validated = {
         status: false,
@@ -97,7 +99,7 @@ export class Availability {
     else
       this.validated = {
         status: true,
-        message: "No Errors",
+        message: "No Errors, Request Submitted!",
       };
   }
 }
