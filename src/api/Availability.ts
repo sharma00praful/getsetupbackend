@@ -29,22 +29,27 @@ export class Availability {
     this.response = res;
   }
 
-  async add() {
+  add() {
     this.validate(this.availability);
     if (this.validated.status) {
-      this.availability.forEach((itemDate: any) => {
-        //saving all dates for a user and getting unique id for slot processing
-        const dateId = this.addDate(itemDate);
-      });
-      this.response.status(200).send(JSON.stringify(this.validated));
-    } else {
-      this.response.status(200).send(JSON.stringify(this.validated));
+      this.addAvailability();
     }
   }
-  addDate(itemDate: ItemDate) {
+
+  addAvailability() {
+    const dbPromises = [];
+    for (const itemDate of this.availability) {
+      dbPromises.push(this.addDate(itemDate));
+    }
+    Promise.all(dbPromises).then(() => {
+      this.response.status(200).send(JSON.stringify(this.validated));
+    });
+  }
+
+  async addDate(itemDate: ItemDate) {
     itemDate.this = this;
     let that = this;
-    let myPromise = new Promise(async function (myResolve, myReject) {
+    return new Promise(async function (myResolve, myReject) {
       let date = itemDate.date;
 
       let connection = getConnection();
@@ -59,6 +64,7 @@ export class Availability {
 
         if (rawData !== undefined) {
           itemDate.dateId = rawData.dates_dateId;
+          await that.clearOldSlots(itemDate.dateId);
         } else {
           const datesTable = new UserAvailabilityDates();
           datesTable.userId = that.userId;
@@ -68,38 +74,43 @@ export class Availability {
 
           itemDate.dateId = datesTable.dateId;
         }
+        Promise.resolve(itemDate);
+        await that.addSlots(itemDate);
       } catch (error) {
         console.log(error);
       } finally {
         myResolve(itemDate);
       }
     });
-
-    myPromise.then(async function (itemDate: ItemDate) {
-      //clearing old available slots
-      await itemDate.this.clearOldSlots(itemDate.dateId);
-
-      itemDate.slots.forEach((itemSlot) => {
-        itemDate.this.addSlot(itemSlot.from, itemSlot.to, itemDate.dateId);
-      });
-    });
+  }
+  addSlots(itemDate: ItemDate) {
+    const dbSlotPromises = [];
+    for (const itemSlot of itemDate.slots) {
+      dbSlotPromises.push(
+        this.addSlot(itemSlot.from, itemSlot.to, itemDate.dateId)
+      );
+    }
+    return Promise.all(dbSlotPromises);
   }
 
   async addSlot(from: string, to: string, dateId: number) {
     let slotId: number;
     let that = this;
     let connection = getConnection();
-    try {
-      const slotsTable = new UserAvailabilitySlots();
-      slotsTable.dateId = dateId;
-      slotsTable.from = from;
-      slotsTable.to = to;
-      await connection.manager.save(slotsTable);
-      slotId = slotsTable.slotId;
-    } catch (error) {
-      console.log(error);
-    }
-    return slotId;
+    return new Promise(async function (myResolve, myReject) {
+      try {
+        const slotsTable = new UserAvailabilitySlots();
+        slotsTable.dateId = dateId;
+        slotsTable.from = from;
+        slotsTable.to = to;
+        await connection.manager.save(slotsTable);
+        slotId = slotsTable.slotId;
+      } catch (error) {
+        console.log(error);
+      } finally {
+        myResolve(slotId);
+      }
+    });
   }
   validate(availability: object) {
     //submission to occur in certain hours 7AM to 10PM
