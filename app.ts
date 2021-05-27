@@ -7,14 +7,14 @@ import * as cors from "cors";
 import { CommonRoutesConfig } from "./common/common.routes.config";
 import { UsersRoutes } from "./users/users.routes.config";
 import debug from "debug";
-import { getConnection, createConnection } from "typeorm";
+import { createConnection } from "typeorm";
 
 const app: express.Application = express();
 const server: http.Server = http.createServer(app);
 const port = 80;
 const routes: Array<CommonRoutesConfig> = [];
 const debugLog: debug.IDebugger = debug("app");
-//creating a database connection
+//here we are creating a database connection
 createConnection();
 
 // here we are adding middleware to parse all incoming requests as JSON
