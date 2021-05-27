@@ -1,6 +1,6 @@
 # GetSetUp Backend Assignment
 
-This app is deployed to an aws instance with end point POST http://3.108.101.52:50001/availability and POST http://3.108.101.52:50001/getavailability
+This app is deployed to an aws instance with end point POST https://gtstupbckend.nbb.world/availability and POST https://gtstupbckend.nbb.world/getavailability
 
 For this project i have used:
 1. TypeScript
