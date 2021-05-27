@@ -38,7 +38,7 @@ all the slots will be fetched using this endpoint.
 
 
 Data Modeling:
-I have used mysql in this perticular app as we need to make connections between datasets, and mysql is very good at that.
+I have used mysql in this particular app as we need to make connections between datasets, and mysql is very good at that.
 
 there are three tables,
 1. users (for storing user information)
