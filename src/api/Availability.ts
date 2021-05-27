@@ -48,14 +48,26 @@ export class Availability {
       let date = itemDate.date;
 
       let connection = getConnection();
+      const entityManager = getConnection().manager;
       try {
-        const datesTable = new UserAvailabilityDates();
-        datesTable.userId = that.userId;
-        datesTable.week = that.weekNumber;
-        datesTable.date = date;
-        await connection.manager.save(datesTable);
+        const rawData = await entityManager
+          .createQueryBuilder(UserAvailabilityDates, "dates")
+          .where("dates.date = :date", { date: date })
+          .andWhere("dates.userId = :userId", { userId: that.userId })
+          .getRawOne();
+        //checking if date already exist for this user
 
-        itemDate.dateId = datesTable.dateId;
+        if (rawData !== undefined) {
+          itemDate.dateId = rawData.dates_dateId;
+        } else {
+          const datesTable = new UserAvailabilityDates();
+          datesTable.userId = that.userId;
+          datesTable.week = that.weekNumber;
+          datesTable.date = date;
+          await connection.manager.save(datesTable);
+
+          itemDate.dateId = datesTable.dateId;
+        }
       } catch (error) {
         console.log(error);
       } finally {
@@ -63,7 +75,10 @@ export class Availability {
       }
     });
 
-    myPromise.then(function (itemDate: ItemDate) {
+    myPromise.then(async function (itemDate: ItemDate) {
+      //clearing old available slots
+      await itemDate.this.clearOldSlots(itemDate.dateId);
+
       itemDate.slots.forEach((itemSlot) => {
         itemDate.this.addSlot(itemSlot.from, itemSlot.to, itemDate.dateId);
       });
@@ -101,5 +116,13 @@ export class Availability {
         status: true,
         message: "No Errors, Request Submitted!",
       };
+  }
+  async clearOldSlots(dateId: number) {
+    const entityManager = getConnection().manager;
+    await entityManager
+      .createQueryBuilder(UserAvailabilitySlots, "slots")
+      .delete()
+      .where("dateId = :id", { id: dateId })
+      .execute();
   }
 }

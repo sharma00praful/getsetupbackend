@@ -1,7 +1,6 @@
 import "reflect-metadata";
-import { getConnection, getManager } from "typeorm";
+import { getConnection } from "typeorm";
 import { UserAvailabilityDates } from "../entity/UserAvailabilityDates";
-import { UserAvailabilitySlots } from "../entity/UserAvailabilitySlots";
 
 export class RetrieveAvailability {
   userId: number;
