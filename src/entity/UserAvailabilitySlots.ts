@@ -1,11 +1,11 @@
-import { Entity, PrimaryGeneratedColumn, Column } from "typeorm";
-
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from "typeorm";
+import { UserAvailabilityDates } from "./UserAvailabilityDates";
 @Entity()
 export class UserAvailabilitySlots {
   @PrimaryGeneratedColumn()
   slotId: number;
 
-  @Column()
+  @ManyToOne((type) => UserAvailabilityDates, (date) => date.dateId)
   dateId: number;
 
   @Column()
