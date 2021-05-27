@@ -42,7 +42,7 @@ I have used mysql in this perticular app as we need to make connections between 
 
 there are three tables,
 1. users (for storing user information)
-2. user_availability_date (for storing user availability dates with weekNumber | using this we can even get all the available dates if we dont want to fetch the time JUST AN IDEA | NOT IMPLEMENTED)
+2. user_availability_date (for storing user availability dates with weekNumber and keeping userId as foreign key | using this we can even get all the available dates if we dont want to fetch the time JUST AN IDEA | NOT IMPLEMENTED)
 3. user_availability_slot (for storing available time slots keeping dateId as foreign key)
 
 Steps to run this project:
